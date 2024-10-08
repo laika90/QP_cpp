@@ -9,8 +9,10 @@ INCDIR = -Iinclude
 LIBDIR =
 LIBS   =
 
+$(shell mkdir -p build)
 
 all: $(TARGET)
+	
 
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) $(INCDIR) -o $@ $^ $(LIBDIR) $(LIBS)
