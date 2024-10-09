@@ -14,7 +14,7 @@ inline Scalar cube(Scalar x) { return x * x * x; };
 template<typename Scalar, int var_num, int con_num>
 void solve(const Eigen::Matrix<Scalar, var_num, var_num> &G, const Eigen::Matrix<Scalar, var_num, 1> &g,
            const Eigen::Matrix<Scalar, con_num, var_num> &A, const Eigen::Matrix<Scalar, con_num, 1> &b,
-           Eigen::Matrix<Scalar, var_num, 1> &ans)
+                 Eigen::Matrix<Scalar, var_num, 1>       &ans)
 {
     static_assert(std::is_same<Scalar, double>::value || std::is_same<Scalar, float> ::value, "Please specify either double or float.");
 
@@ -27,7 +27,7 @@ void solve(const Eigen::Matrix<Scalar, var_num, var_num> &G, const Eigen::Matrix
     // deceleration factor
     Scalar eta = 0.95;
 
-    // finish criteria
+    // termination criteria
     Scalar epsilon;
     if      (std::is_same<Scalar, double>::value) { epsilon = 1E-9; }
     else if (std::is_same<Scalar, float> ::value) { epsilon = 1E-4f; }
@@ -88,9 +88,6 @@ void solve(const Eigen::Matrix<Scalar, var_num, var_num> &G, const Eigen::Matrix
         Scalar alpha_s = std::min( 1.0, ((ds.array() < 0).select(-s.array()/ds.array(), 1)).minCoeff() );
         Scalar alpha   = std::min( alpha_z, alpha_s );
 
-        std::cout <<"ds  "<<   ds << "  " << "s  " << s << std::endl;
-        std::cout << "alpha  " << alpha << std::endl;
-
         // update state
         alpha *= eta; // decelerate
         x += alpha*dx;
@@ -108,6 +105,7 @@ void solve(const Eigen::Matrix<Scalar, var_num, var_num> &G, const Eigen::Matrix
         // update iteration count
         iter_count += 1;
 
+        // termination condition
         if ( rd.norm() < epsilon && rp.norm() < epsilon && std::abs(mu) < epsilon ) { break; }
         else if ( iter_count > max_iteration ) { break; }
 
@@ -119,4 +117,4 @@ void solve(const Eigen::Matrix<Scalar, var_num, var_num> &G, const Eigen::Matrix
 
 }
 
-#endif // OP_CPP_HPP
+#endif // QP_CPP_HPP
