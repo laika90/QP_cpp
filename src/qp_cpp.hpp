@@ -31,7 +31,7 @@ void solve(const Eigen::Matrix<Scalar, var_num, var_num> &G, const Eigen::Matrix
     Scalar epsilon;
     if      (std::is_same<Scalar, double>::value) { epsilon = 1E-9; }
     else if (std::is_same<Scalar, float> ::value) { epsilon = 1E-4f; }
-    int max_iteration = 10;
+    int max_iteration = 200;
     int iter_count = 0;
 
     // initial value
@@ -40,7 +40,7 @@ void solve(const Eigen::Matrix<Scalar, var_num, var_num> &G, const Eigen::Matrix
     DualVector   s = DualVector  ::Ones();
 
     // initial residuals
-    PrimalVector rd  = g - At*z;
+    PrimalVector rd  = g + At*z;
     DualVector   rp  = s - b;
     DualVector   rsl = s.array() * z.array();
 
@@ -58,9 +58,9 @@ void solve(const Eigen::Matrix<Scalar, var_num, var_num> &G, const Eigen::Matrix
         Eigen::LLT<Eigen::Matrix<Scalar, var_num, var_num>> Gbar = (G + At * ((z.array() / s.array()).matrix().asDiagonal()) * A).llt();
         
         // prediction -- determine affine scaling direction (dx_aff, dz_aff, ds_aff)
-        rbar = At * ( ((rsl.array() - z.array()*rp.array()) / s.array()).matrix() );
+        rbar = At * ( ((-rsl.array() + z.array()*rp.array()) / s.array()).matrix() );
         dx   = Gbar.solve(-(rd + rbar));
-        ds   = A*dx - rp;
+        ds   = -A*dx - rp;
         dz.array() = -(rsl.array() + z.array()*ds.array()) / s.array();
 
         // determine alpha_aff
@@ -78,9 +78,9 @@ void solve(const Eigen::Matrix<Scalar, var_num, var_num> &G, const Eigen::Matrix
         rsl.array() += ds.array() * dz.array() - sigma*mu;
 
         // correction
-        rbar = At * ( ((rsl.array() - z.array()*rp.array()) / s.array()).matrix() );
+        rbar = At * ( ((-rsl.array() + z.array()*rp.array()) / s.array()).matrix() );
         dx   = Gbar.solve(-(rd + rbar));
-        ds   = A*dx - rp;
+        ds   = -A*dx - rp;
         dz.array() = -(rsl.array() + z.array()*ds.array()) / s.array();
 
         // determine alpha
@@ -98,7 +98,7 @@ void solve(const Eigen::Matrix<Scalar, var_num, var_num> &G, const Eigen::Matrix
         s += alpha*ds;
 
         // update residuals
-        rd  = G*x + g - At*z;
+        rd  = G*x + g + At*z;
         rp  = s + A*x - b;
         rsl = s.array()*z.array();
 
