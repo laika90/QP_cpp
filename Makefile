@@ -12,13 +12,15 @@ LIBS   =
 $(shell mkdir -p build)
 
 all: $(TARGET)
-	
+
+release: OPTFLAGS = -O3
+release: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) $(INCDIR) -o $@ $^ $(LIBDIR) $(LIBS)
+	$(CC) $(CFLAGS) $(OPTFLAGS) $(INCDIR) -o $@ $^ $(LIBDIR) $(LIBS)
 
 build/%.o: src/%.cpp
-	$(CC) $(CFLAGS) $(INCDIR) -c -o $@ $<
+	$(CC) $(CFLAGS) $(OPTFLAGS) $(INCDIR) -c -o $@ $<
 
 clean:
 	rm -f $(OBJS) $(TARGET)$(EXE)
